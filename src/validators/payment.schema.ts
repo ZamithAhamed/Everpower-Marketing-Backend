@@ -12,6 +12,8 @@ export const createPaymentSchema = z.object({
   }),
 });
 
+export type CreatePaymentInput = z.infer<typeof createPaymentSchema>["body"];
+
 export const updatePaymentSchema = z.object({
   params: z.object({ id: z.string().min(1) }),
   body: z.object({
@@ -23,6 +25,8 @@ export const updatePaymentSchema = z.object({
     reference: z.string().optional(),            // NEW
   }).refine(d => Object.keys(d).length > 0, { message: 'Provide at least one field to update', path: ['body'] }),
 });
+
+export type UpdatePaymentInput = z.infer<typeof updatePaymentSchema>['body'];
 
 export const idParamSchema = z.object({
   params: z.object({ id: z.string().min(1) }),
@@ -40,3 +44,4 @@ export const listPaymentQuerySchema = z.object({
     limit: z.coerce.number().int().positive().max(100).optional(),
   }),
 });
+

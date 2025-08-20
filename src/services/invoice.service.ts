@@ -54,7 +54,7 @@ export async function create(data: {
       await conn.execute(`INSERT INTO invoice_counters (year, last_series) VALUES (:year, 0)`, { year });
       last = 0;
     }
-    const series = (last ?? 0) + 1;
+    const series = Number(last ?? 0) + 1;
     await conn.execute(`UPDATE invoice_counters SET last_series = :series WHERE year = :year`, { series, year });
     const id = `INV-${year}-${pad(series)}`;
 
@@ -112,7 +112,7 @@ export async function create(data: {
           if ('price' in item) {
             await stripe!.invoiceItems.create({
               customer: customer.id,
-              price: item.price,
+              // price: item.price,
               quantity: item.quantity ?? 1,
               invoice: draft.id,
             });
@@ -142,14 +142,15 @@ export async function create(data: {
       }
 
       // d) finalize (and email if configured)
-      const finalized = await stripe!.invoices.finalizeInvoice(draft.id);
+      if (!draft.id) throw new Error('Stripe draft invoice ID is undefined');
+      const finalized = await stripe!.invoices.finalizeInvoice(draft.id as string);
       if (finalizeAndEmail) {
-        await stripe!.invoices.sendInvoice(finalized.id);
+        await stripe!.invoices.sendInvoice(finalized.id as string);
       }
 
-      const emaol = await stripe!.invoices.sendInvoice(finalized.id);
+      const email = await stripe!.invoices.sendInvoice(finalized.id as string);
 
-      stripe_invoice_id = finalized.id;
+      stripe_invoice_id = finalized.id ?? null;
       stripe_status = finalized.status ?? null;
       stripe_hosted_url = finalized.hosted_invoice_url ?? null;
       stripe_pdf_url = finalized.invoice_pdf ?? null;

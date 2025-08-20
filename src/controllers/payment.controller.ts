@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as PaymentService from '../services/payment.service';
-import { createPaymentSchema, updatePaymentSchema } from '../validators/payment.schema';
+import { CreatePaymentInput, UpdatePaymentInput } from '../validators/payment.schema';
 
 export async function listPayments(req: Request, res: Response, next: NextFunction) {
   try {
@@ -14,7 +14,7 @@ export async function listPayments(req: Request, res: Response, next: NextFuncti
   } catch (e) { next(e); }
 }
 
-export async function createPayment(req: Request<{}, {}, createPaymentSchema>, res: Response, next: NextFunction) {
+export async function createPayment(req: Request<{}, {}, CreatePaymentInput>, res: Response, next: NextFunction) {
   try {
     const created = await PaymentService.create(req.body);
     res.status(201).json(created);
@@ -28,7 +28,7 @@ export async function getPaymentById(req: Request<{ id: string }>, res: Response
   } catch (e) { next(e); }
 }
 
-export async function updatePayment(req: Request<{ id: string }, {}, updatePaymentSchema>, res: Response, next: NextFunction) {
+export async function updatePayment(req: Request<{ id: string }, {}, UpdatePaymentInput>, res: Response, next: NextFunction) {
   try {
     const updated = await PaymentService.update(req.params.id, req.body);
     res.json(updated);

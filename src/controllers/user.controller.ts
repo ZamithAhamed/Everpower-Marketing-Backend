@@ -28,7 +28,7 @@ export async function getUserById(req: Request<{ id: string }>, res: Response, n
   } catch (e) { next(e); }
 }
 
-export async function updateUser(req: Request<{ id: string }, {}, UpdateUserInput>, res: Response, next: NextFunction) {
+export async function updateUser(req: Request<{ id: string }, {}>, res: Response, next: NextFunction) {
   try {
     const updated = await UserService.updateUser(Number(req.params.id), req.body);
     res.json(updated);
