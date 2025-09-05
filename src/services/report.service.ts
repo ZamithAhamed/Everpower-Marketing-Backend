@@ -43,9 +43,10 @@ async function sumCompletedPaymentsBetween(start: Date, end: Date) {
 export async function getOverview(opts: { month?: string }) {
   
   // A) Totals and counts
-  const [[invSumRows], [payCompletedSumRows], [invCountRows], [paidCountRows]]: any = await Promise.all([
+  const [[invSumRows], [payCompletedSumRows], [payPendingSumRows], [invCountRows], [paidCountRows]]: any = await Promise.all([
     pool.query(`SELECT COALESCE(SUM(amount),0) AS total FROM invoices`),
     pool.query(`SELECT COALESCE(SUM(amount),0) AS total FROM payments WHERE status = 'COMPLETED'`),
+    pool.query(`SELECT COALESCE(SUM(amount),0) AS total FROM payments WHERE status = 'PENDING'`),
     pool.query(`SELECT COUNT(*) AS cnt FROM invoices`),
     pool.query(`SELECT COUNT(*) AS cnt FROM invoices WHERE status = 'PAID'`),
   ]);
@@ -53,6 +54,7 @@ export async function getOverview(opts: { month?: string }) {
   const totalCompletedPayments = Number(payCompletedSumRows[0]?.total || 0);
   const invoiceCount = Number(invCountRows[0]?.cnt || 0);
   const paidInvoiceCount = Number(paidCountRows[0]?.cnt || 0);
+  const totalPendingPayments = Number(payPendingSumRows[0]?.total || 0);
 
   const totalOutstanding = Math.max(totalInvoiced - totalCompletedPayments, 0);
   const totalActiveInvoices = Math.max(invoiceCount - paidInvoiceCount, 0);
@@ -113,6 +115,8 @@ export async function getOverview(opts: { month?: string }) {
   return {
     totalOutstanding,
     paymentsThisMonth,
+    totalCompletedPayments,
+    totalPendingPayments,
     totalActiveInvoices,
     paymentSuccessRate,
     paymentReceived: {
